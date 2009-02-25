@@ -1,3 +1,4 @@
+
 cover_db
 META.yml
 Makefile
@@ -6,8 +7,12 @@ inc
 pm_to_blib
 MANIFEST
 Makefile.old
-MANIFEST.bak
 .*.swp
 .prove
+*.bak
+*~
+MANIFEST.bak
 t/test-cache-file.txt
 t/test-cache.db
+Device-WWN-*
+
