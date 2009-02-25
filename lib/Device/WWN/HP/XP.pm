@@ -6,11 +6,11 @@ extends 'Device::WWN::Hitachi::HDS';
 use Device::WWN::Carp qw( croak );
 
 our %FAMILY = (
-    '01'        => 'XP 256',
-    '02'        => 'XP 512/48',
-    '03'        => 'XP 1024/128',
-    '04'        => 'XP 12000/10000',
-    #'??'        => 'XP24000',
+    '01'        => 'XP256',
+    '02'        => 'XP512/XP48',
+    '03'        => 'XP1024/XP128',
+    '04'        => 'XP12000/XP10000',
+    '05'        => 'XP24000/XP20000',
 );
 
 has 'family'    => ( is => 'rw', isa => 'Maybe[Str]', lazy_build => 1 );

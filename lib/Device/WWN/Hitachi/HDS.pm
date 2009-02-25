@@ -20,42 +20,33 @@ has '+wwn' => (
             A 0 B 1 C 2 D 3 E 4 F 5 G 6 H 7
             J 8 K 9 L A M B N C O D P E Q F
         );
-        return join( '',
-            $self->naa,
-            $self->oui->normalized,
-            $self->family_id,
-            sprintf( '%X', $self->serial_number ),
-            $self->cluster,
-            $ports{ $self->port },
-        );
+        $self->port =~ /^([01])(\w)$/ or croak "Invalid port";
+        my $port = ( $1 - 1 ) . $ports{ $2 };
+        my $oui = $self->oui->normalized;
+        $oui =~ s/[^a-f0-9]//ig;
+        my $fid = sprintf( '%02d', $self->family_id );
+        my $serial = sprintf( '%X', $self->serial_number );
+        return join( '', $self->naa, $oui, '0', $fid, $serial, $port );
     },
 );
 
 sub _build_naa { return 5 }
 sub _build_oui { return Device::OUI->new( '0060E8' ) }
 
+# HDS seems to ignore the first character of the vendor_id, as far as I can
+# tell it is always 0
 has 'family_id' => ( is => 'rw', isa => 'Str', lazy_build => 1 );
-sub _build_family_id { return substr( shift->vendor_id, 0, 2 ) }
+sub _build_family_id { return substr( shift->vendor_id, 1, 2 ) }
 
 has 'serial_number' => ( is => 'rw', isa => 'Str', lazy_build => 1 );
-sub _build_serial_number { return hex( substr( shift->vendor_id, 2, 4 ) ) }
-
-has 'cluster'   => ( is => 'rw', isa => 'Int', lazy_build => 1 );
-sub _build_cluster {
-    my $self = shift;
-    my $cluster = substr( $self->vendor_id, 6, 1 );
-    if ( $cluster == 0 ) {
-        return 1;
-    } elsif ( $cluster == 1 ) {
-        return 2;
-    }
-}
+sub _build_serial_number { return hex( substr( shift->vendor_id, 3, 4 ) ) }
 
 has 'port'  => ( is => 'rw', isa => 'Str', lazy_build => 1 );
 sub _build_port {
     my $self = shift;
+    my $cluster = substr( $self->vendor_id, 7, 1 ) + 1;
     my @ports = qw( A B C D E F G H J K L M N O P Q );
-    return $ports[ hex( substr( $self->vendor_id, 7, 1 ) ) ];
+    return $cluster.$ports[ hex( substr( $self->vendor_id, 8, 1 ) ) ];
 }
 
 no Moose;
@@ -88,10 +79,6 @@ if the WWN provided can be handled by this subclass.
 =head2 family_id
 
 Returns the family ID part of the WWN.
-
-=head2 cluster
-
-Returns the cluster the WWN is associated with.
 
 =head2 port
 
