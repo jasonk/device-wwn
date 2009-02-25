@@ -1,6 +1,6 @@
 package Device::WWN::Hitachi::HDS;
 use strict; use warnings;
-our $VERSION = '0.01';
+our $VERSION = '1.00';
 use Moose;
 extends 'Device::WWN';
 use Device::WWN::Carp qw( croak );

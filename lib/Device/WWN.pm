@@ -1,6 +1,6 @@
 package Device::WWN;
 use strict; use warnings;
-our $VERSION = '0.01';
+our $VERSION = '1.00';
 use Moose;
 use Module::Find ();
 use Device::OUI;
@@ -176,6 +176,7 @@ sub wwn_cmp {
         if ( $l[0] == $r[0] ) { shift( @l ); shift( @r ); }
         return $l[0] <=> $r[0];
     }
+    return 0;
 }
 
 has 'normalized'    => ( is => 'rw', isa => 'Maybe[Str]', lazy_build => 1 );
