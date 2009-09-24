@@ -1,6 +1,6 @@
 #!perl
 use strict; use warnings;
-use Test::Most tests => 197;
+use Test::Most tests => 213;
 use ok 'Device::WWN';
 
 my @values = (
@@ -203,6 +203,8 @@ for my $x ( @values ) {
     unless ( $class eq 'Device::WWN' ) {
         my @sc = grep { $_ eq $class }
             Device::WWN->find_subclasses( $x->{ 'wwn' } );
+        ok( @sc == 1, "find_subclasses finds one class for $x->{ 'wwn' }" );
+        is( $sc[0], $class, "find_subclasses found $class for $x->{ 'wwn' }" );
         ok( @sc > 0, "find_subclasses finds $class for $x->{ 'wwn' }" );
     }
     ok(
@@ -219,5 +221,13 @@ for my $x ( @values ) {
     is( $oui->norm, delete $x->{ 'oui_norm' }, 'OUI normalized value OK' );
     for my $key ( keys %{ $x } ) {
         is( $wwn->$key, $x->{ $key }, "$key value OK" );
+    }
+
+    if ( $x->{ 'class' } ) {
+        ok(
+            my $obj = Device::WWN->new( $x->{ 'wwn' } ),
+            "Created a Device::WWN object with $x->{ 'wwn' }",
+        );
+        isa_ok( $obj, $x->{ 'class' }, "It was reblessed correctly" );
     }
 }

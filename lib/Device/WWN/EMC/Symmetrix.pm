@@ -1,6 +1,6 @@
 package Device::WWN::EMC::Symmetrix;
 use strict; use warnings;
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 use Moose;
 extends 'Device::WWN';
 use Sub::Exporter -setup => {

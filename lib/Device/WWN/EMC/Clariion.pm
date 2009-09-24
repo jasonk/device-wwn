@@ -1,6 +1,6 @@
 package Device::WWN::EMC::Clariion;
 use strict; use warnings;
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 use Moose;
 extends 'Device::WWN';
 #use Carp::Clan qw{ ^Device::WWN($|::) croak };

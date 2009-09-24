@@ -1,6 +1,6 @@
 package Device::WWN::Carp;
 use strict; use warnings;
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 use Carp::Clan::Share;
 1;
 __END__

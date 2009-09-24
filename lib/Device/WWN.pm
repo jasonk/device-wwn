@@ -1,6 +1,6 @@
 package Device::WWN;
 use strict; use warnings;
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 use Moose;
 use Module::Find ();
 use Device::OUI;
@@ -15,19 +15,17 @@ use Sub::Exporter -setup => {
     exports => [qw( wwn_to_integers normalize_wwn wwn_cmp )],
 };
 
-{
-    my @handlers;
-    sub find_subclasses {
-        my $class = shift;
-        my $wwn = normalize_wwn( shift )
-            || croak "Must specify a WWN for find_subclass";
-        unless ( @handlers ) {
-            @handlers = grep {
-                /::/ && $_->isa( __PACKAGE__ )
-            } Module::Find::useall( __PACKAGE__ );
-        }
-        grep { $_->accept_wwn( $wwn ) } @handlers;
+our @HANDLERS;
+sub find_subclasses {
+    my $class = shift;
+    unless ( @HANDLERS ) {
+        @HANDLERS = grep {
+            /::/ && $_->isa( __PACKAGE__ )
+        } Module::Find::useall( __PACKAGE__ );
     }
+    my $wwn = normalize_wwn( shift )
+        || croak "Must specify a WWN for find_subclass";
+    grep { $_->accept_wwn( $wwn ) } @HANDLERS;
 }
 
 has 'wwn'   => (
@@ -37,11 +35,14 @@ has 'wwn'   => (
     clearer     => 'clear_wwn',
     trigger     => sub {
         my ( $self, $val ) = @_;
-        if ( ref $self ne __PACKAGE__ ) { # it's a subclass
-            if ( $self->can( 'accept_wwn' ) ) {
-                $self->accept_wwn( normalize_wwn( $val ) )
-                    || croak "Invalid WWN '$val' for " . ref( $self );
+        if ( Scalar::Util::blessed( $self ) eq __PACKAGE__ ) { # not subclass
+            my @possible = $self->find_subclasses( $val );
+            if ( @possible == 1 ) {
+                $self->rebless_class( $possible[0] )
             }
+        } elsif ( $self->can( 'accept_wwn' ) ) { # it is a subclass
+            $self->accept_wwn( normalize_wwn( $val ) )
+                || croak "Invalid WWN '$val' for " . ref( $self );
         }
         if ( $val ) {
             $self->clear_wwn_dependent
@@ -50,6 +51,13 @@ has 'wwn'   => (
         }
     },
 );
+
+sub rebless_class {
+    my ( $self, $new_class ) = @_;
+    die "$new_class is not a subclass of ".__PACKAGE__
+        unless $self->isa( __PACKAGE__ );
+    bless( $self, $new_class );
+}
 
 sub clear_wwn_dependent {
     my $self = shift;

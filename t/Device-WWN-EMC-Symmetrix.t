@@ -1,13 +1,19 @@
 #!perl
 use strict; use warnings;
-use Test::Most tests => 3;
+use Test::Most tests => 6;
 use ok 'Device::WWN::EMC::Symmetrix';
+use ok 'Device::WWN';
 
 ok( my $obj = Device::WWN::EMC::Symmetrix->new( {
     serial_number       => '123456789',
     port                => '03AA',
 } ), "created object with serial/port" );
 is( $obj->wwn, '50060481d6f34542', "wwn OK" );
+
+ok( my $obj2 = Device::WWN->new( {
+    wwn => '50060481d6f34542',
+} ), 'created new Device::WWN object for 50060481d6f34542' );
+isa_ok( $obj2, 'Device::WWN::EMC::Symmetrix' );
 
 __END__
 my @values = (
